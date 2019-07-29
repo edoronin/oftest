@@ -1,0 +1,54 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webservice0001
+  labels:
+    app: webservice0001
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: webservice0001
+    spec:
+      containers:
+        - name: webservice0001
+          image: egordoronin/webservice0001:v3
+          env:
+            - name: APP_NAME
+              value: "webservice0001"
+            - name: VERSION
+              value: "0.0.3"
+            - name: K8_NODE
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: K8_POD
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: K8_NS
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: K8_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+              name: webservice0001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webservice0001
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: webservice0001
+  selector:
+    app: webservice0001
